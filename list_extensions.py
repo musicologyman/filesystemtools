@@ -2,23 +2,9 @@
 
 from argparse import ArgumentParser, Namespace
 from collections.abc import Iterable
-from functools import partial
-from itertools import chain
 from pathlib import Path
 from toolz.functoolz import pipe
-
-def get_files(parent: Path, recursive: bool=True) -> Iterable[Path]:
-    return chain((p for p in parent.iterdir() if p.is_file()),
-                 *(get_files(p) for p in parent.iterdir() 
-                   if recursive and p.is_dir()))
-
-def get_extensions(parent: Path, recursive: bool=True) -> Iterable[str]:
-    return (p.suffix for p in get_files(parent, recursive))
-
-def get_extensions_set(parent: Path, recursive: bool=True) -> Iterable[str]:
-    return pipe(get_extensions(parent, recursive),
-                set,
-                partial(sorted, key=str.lower))
+import filesystem
 
 def setup_command_line() -> Namespace:
     parser = ArgumentParser()
@@ -39,7 +25,7 @@ def main():
 
     print('Extensions:')
     top_level_dir = args.top_level_dir.expanduser()
-    pipe(get_extensions_set(top_level_dir, recursive=args.recursive),
+    pipe(filesystem.get_extensions_set(top_level_dir, recursive=args.recursive),
          print_extensions)
     
 if __name__ == '__main__':
